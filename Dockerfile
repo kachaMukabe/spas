@@ -1,15 +1,15 @@
 # Use the official Python 3.12 slim image as the base
 FROM python:3.12-slim
 
-# Set the working directory in the container
-WORKDIR /app
-
 # Copy the requirements file
 COPY requirements.txt .
 
 # Install project dependencies. It's best practice to pin library versions
 # in your requirements.txt for reproducible builds.
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Set the working directory in the container
+WORKDIR /app
 
 # Copy project files
 COPY . .
@@ -44,4 +44,4 @@ ENV VERIFY_TOKEN="your_verify_token"
 ENV APP_SECRET="your_app_secret"
 
 # Command to run the FastAPI application using Uvicorn
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080", "--workers", "2"]
