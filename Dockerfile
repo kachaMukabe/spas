@@ -11,11 +11,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Set the working directory in the container
 WORKDIR /app
 
-# Copy project files
-COPY . .
+# Copy project filesCOPY . /app
+COPY . /app
 
 # Create a non-root user for security best practices (optional but recommended).
-RUN useradd -ms /bin/bash appuser
+RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /app
 USER appuser
 
 # Expose the port your FastAPI app runs on
