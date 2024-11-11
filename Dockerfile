@@ -19,7 +19,7 @@ RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /
 USER appuser
 
 # Expose the port your FastAPI app runs on
-EXPOSE 8000
+EXPOSE 8080
 
 # Set environment variables (Important! Replace with your actual values or use secrets).
 
