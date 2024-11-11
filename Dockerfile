@@ -18,8 +18,6 @@ COPY . /app
 RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /app
 USER appuser
 
-# Expose the port your FastAPI app runs on
-EXPOSE 8080
 
 # Set environment variables (Important! Replace with your actual values or use secrets).
 
@@ -44,4 +42,4 @@ ENV VERIFY_TOKEN="your_verify_token"
 ENV APP_SECRET="your_app_secret"
 
 # Command to run the FastAPI application using Uvicorn
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080", "--workers", "2"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "$PORT", "--workers", "2"]
