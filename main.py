@@ -138,3 +138,61 @@ async def process_order(order: Order, db: Session = Depends(get_db)):
         db.rollback()
         print(f"Error processing order: {e}")
         raise HTTPException(status_code=500, detail="Error processing order")
+
+
+@app.get("/orders/{phone_number}")
+async def get_orders_by_phone_number(phone_number: str, db: Session = Depends(get_db)):
+    try:
+        orders = db.query(PadOrder).filter(PadOrder.phone_number == phone_number).all()
+
+        if not orders:
+            raise HTTPException(
+                status_code=404, detail="No orders found for this phone number"
+            )
+
+        # Extract order IDs
+        order_ids = [
+            str(order.id) for order in orders
+        ]  # Convert UUID to string if needed
+
+        return {"order_ids": order_ids}
+
+    except HTTPException as e:  # Re-raise HTTPExceptions
+        raise e
+
+    except Exception as e:  # Handle other database errors
+        print(f"Error retrieving orders: {e}")
+        raise HTTPException(status_code=500, detail="Error retrieving orders")
+
+
+@app.get("/order/{order_id}")
+async def get_order_by_id(
+    order_id: str, db: Session = Depends(get_db)
+):  # order_id is a string (or UUID if applicable)
+
+    try:
+
+        order = db.query(PadOrder).filter(PadOrder.id == order_id).first()
+
+        if not order:
+            raise HTTPException(status_code=404, detail="Order not found")
+
+        # Convert the SQLAlchemy object to a dictionary (or Pydantic model if you prefer)
+        order_data = (
+            order.__dict__
+        )  #  Excludes private attributes (those starting with '_')
+
+        # If Order.id is a UUID, convert it to a string in the response:
+        if isinstance(order.id, uuid.UUID):
+            order_data["id"] = str(order.id)
+
+        return order_data
+
+    except HTTPException as e:  # Re-raise the HTTPException
+        raise e
+
+    except (
+        Exception
+    ) as e:  # Catch any other potential errors (e.g., database errors during UUID conversion)
+        print(f"Error retrieving order: {e}")  # Log the error for debugging
+        raise HTTPException(status_code=500, detail="Error retrieving order")
