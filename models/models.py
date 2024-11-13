@@ -43,3 +43,11 @@ class Order(BaseModel):
 class OrderResponse(BaseModel):
     status: str
     order_id: str
+
+
+class PhoneNumberRequest(BaseModel):
+    phone_number: str
+
+
+class OrderIDRequest(BaseModel):
+    order_id: str

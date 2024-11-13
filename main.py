@@ -9,7 +9,13 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 
 from routers import webhook
-from models.models import Order, OrderResponse, RapidProMessage
+from models.models import (
+    Order,
+    OrderIDRequest,
+    OrderResponse,
+    PhoneNumberRequest,
+    RapidProMessage,
+)
 from models.whatsapp_models import Section
 from services import (
     send_interactive_list,
@@ -121,7 +127,7 @@ async def process_order(order: Order, db: Session = Depends(get_db)):
     logger.info(order)
     try:
         db_order = PadOrder(
-            phone_number=order.contact.urn,
+            phone_number=order.contact.urn.replace("tel:", ""),
             number_of_pads=order.results.pads_requested.value,
             delivery_address=order.results.delivery_address.value,
             special_instructions=order.results.special_instructions.value,
@@ -140,9 +146,12 @@ async def process_order(order: Order, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail="Error processing order")
 
 
-@app.get("/orders/{phone_number}")
-async def get_orders_by_phone_number(phone_number: str, db: Session = Depends(get_db)):
+@app.post("/orders")
+async def get_orders_by_phone_number(
+    request: PhoneNumberRequest, db: Session = Depends(get_db)
+):
     try:
+        phone_number = request.phone_number
         orders = db.query(PadOrder).filter(PadOrder.phone_number == phone_number).all()
 
         if not orders:
@@ -154,6 +163,7 @@ async def get_orders_by_phone_number(phone_number: str, db: Session = Depends(ge
         order_ids = [
             str(order.id) for order in orders
         ]  # Convert UUID to string if needed
+        logger.info(order_ids)
 
         return {"order_ids": order_ids}
 
@@ -165,13 +175,14 @@ async def get_orders_by_phone_number(phone_number: str, db: Session = Depends(ge
         raise HTTPException(status_code=500, detail="Error retrieving orders")
 
 
-@app.get("/order/{order_id}")
+@app.post("/order")
 async def get_order_by_id(
-    order_id: str, db: Session = Depends(get_db)
+    request: OrderIDRequest, db: Session = Depends(get_db)
 ):  # order_id is a string (or UUID if applicable)
 
     try:
 
+        order_id = request.order_id
         order = db.query(PadOrder).filter(PadOrder.id == order_id).first()
 
         if not order:
