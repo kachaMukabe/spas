@@ -79,8 +79,12 @@ async def log_requests(request: Request, call_next):
 @app.post("/callback")
 async def handle_rapidpro_callback(payload: RapidProMessage):
 
-    message_data = yaml.safe_load(payload.text)
-    logger.info(message_data)
+    try:
+        message_data = yaml.safe_load(payload.text)
+        logger.info(message_data)
+    except Exception as e:
+        logger.error(f"Error parsing message data: {e}")
+        message_data = payload.text
 
     if type(message_data) is dict:
         if message_data["type"] == "interactive":
